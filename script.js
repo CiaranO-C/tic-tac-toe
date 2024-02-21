@@ -39,7 +39,7 @@ const players = (() => {
     const two = createPlayer();
 
     //All methods relating to both players
-    function currentPlayer() {
+    function current() {
         if (one.isTurn()) {
             return one;
         } else {
@@ -47,7 +47,7 @@ const players = (() => {
         };
     };
 
-    return { one, two, currentPlayer};
+    return { one, two, current };
 })();
 
 const gameBoard = (() => {
@@ -175,18 +175,15 @@ const gameBoard = (() => {
 const gameControl = () => {
     gameBoard.generateBoard();
     display.generateBoard();
+    display.applyListeners();
 
     const playerOne = players.one;
     const playerTwo = players.two;
 
     //play button function call goes here right before getNames
     const names = display.getNames;
-
     playerOne.setName(names().nameOne);
     playerTwo.setName(names().nameTwo);
-
-    console.log(playerOne.getName());
-    console.log(players.two.getName());
 
     function setMarkers() {
         //if player one has no marker, must be first round
@@ -228,7 +225,7 @@ const gameControl = () => {
         };
     };
 
-    
+
 
     let row;
     let col;
@@ -252,7 +249,7 @@ const gameControl = () => {
                 getMove();
             } while (!gameBoard.validateMove(row, col));
 
-            gameBoard.updateBoard(row, col, players.currentPlayer()().getMarker());
+            gameBoard.updateBoard(row, col, players.current()().getMarker());
 
             console.table(gameBoard.getBoard());
 
@@ -318,19 +315,89 @@ const gameControl = () => {
 };
 
 const display = (() => {
-
-    const boardContainer = document.querySelector('.boardContainer');
     let board = [];
+    const boardContainer = document.querySelector('.boardContainer');
+    const resetButton = document.querySelector('#resetBtn');
+    const markerButtons = document.querySelectorAll('.markerBtn');
+    let markerBtnsEnabled;
+
+
+    // const getMarkers = () => {
+    //when getMarkers is called it means the play has started, therefore this function should also remove event listners
+    //essentially disabling player ability to change marker. OR can write a separate method to remove listeners called
+    //disableButtons that can be called immediately after!
+    //};
+
+    /*
+    const toggleMarkerButtons = () => {
+        if(markerBtnsEnabled){
+            markerButtons.forEach(btn => {
+                btn.removeEventListener('click', )
+            })
+        }
+    };
+    */
+
+    const dotOne = document.createElement('div');
+    dotOne.classList.add('dot');
+
+    const updatePlayerCard = (btn) => {
+        const player = btn.parentElement.id;
+        const btnContainer = btn.parentElement;
+        console.log(btn.value);
+
+        if (btnContainer.children.length < 3) {
+            btnContainer.appendChild(dotOne);
+        };
+        if (btn.value === 'x') {
+            dotOne.classList.toggle('x', true);  // Add 'x' class
+            dotOne.classList.toggle('o', false); // Remove 'o' class
+        } else {
+            dotOne.classList.toggle('o', true);  // Add 'o' class
+            dotOne.classList.toggle('x', false); // Remove 'x' class
+        }
+    }
+
+    const applyListeners = () => {
+        boardContainer.addEventListener('click', (e) => {
+            updateBoard(e);
+        });
+
+        resetButton.addEventListener('click', () => {
+            resetGame();
+        });
+
+        markerButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                updatePlayerCard(btn);
+            });
+            //console.log(btn.value)
+            //console.log(btn.parentElement.id)
+        });
+    }
+
+    const resetGame = () => {
+        function clearBoard() {
+            while (boardContainer.firstChild) {
+                boardContainer.firstChild.remove();
+            };
+        };
+        clearBoard();
+        generateBoard();
+    };
 
     const updateBoard = (event) => {
         const cell = event.target;
         const marker = document.createElement('img');
-        if(players.)
+        if (players.current().getMarker() === 'X') {
+            marker.src = "./images/x.png";
+        } else {
+            marker.src = "./images/o.png";
+        };
+        cell.appendChild(marker);
     };
 
     const generateBoard = () => {
-        board = gameBoard.getBoard();
-
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {
                 const cell = document.createElement('button');
@@ -339,10 +406,6 @@ const display = (() => {
                 boardContainer.appendChild(cell);
             };
         };
-
-        boardContainer.addEventListener('click', (e) => {
-            updateBoard(e);
-        });
     };
 
 
@@ -356,7 +419,7 @@ const display = (() => {
     //     const markerOne = document.querySelector(#)
     //  }
 
-    return { generateBoard, getNames, };
+    return { generateBoard, getNames, resetGame, applyListeners };
 })();
 
 

@@ -124,6 +124,7 @@ border: 1.5px solid black;
 }
 
 .markers {
+    position: relative;
     display: flex;
     justify-content: space-evenly;
     margin-top: 20px;
@@ -181,7 +182,33 @@ footer>span {
     border-radius: 5px;
 }
 
+.cell>img {
+    width: 70%;
+}
+
 .play {
     width: 50%;
     font-size: 2em;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+
+    border-radius: 50%;
+
+    background-color: rgb(255, 0, 217);
+    border: 1px solid black;
+
+    position: absolute;
+    top: 75px;
+    transition: 0.5s;
+}
+
+.x {
+    left: 28.5px;
+}
+
+.o {
+    left: 107px;
 }
