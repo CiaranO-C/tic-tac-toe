@@ -90,13 +90,13 @@ border: 1.5px solid black;
 }
 
 .playerImg {
-    width: 60%;
+    max-width: 60%;
     height: auto;
     border-radius: 30%;
     border: 2px solid black;
 }
 
-.playerInfo>input {
+.playerInfo>input[type="text"] {
     font-family: inherit;
     text-align: center;
     font-size: 2.2em;
@@ -111,7 +111,7 @@ border: 1.5px solid black;
     display: flex;
     flex-direction: column;
     background-color: whitesmoke;
-    width: 100%;
+    width: 260px;
     height: 90%;
     align-items: center;
     align-self: end;
@@ -123,26 +123,37 @@ border: 1.5px solid black;
     border: 1px solid black;
 }
 
-.markers {
-    position: relative;
+
+.radioContainer {
+   display: flex;
+   padding-top: 25px;
+   gap: 20px;
+
+   position: relative;
+}
+
+.markerContainer>label {
     display: flex;
-    justify-content: space-evenly;
-    margin-top: 20px;
-    gap: 20px;
+    justify-content: center;
 }
 
-.markers>button {
-    background-color: rgba(255, 255, 255, 0);
-    border: none;
-   
+input[type="radio"] {
+  appearance: none;
 }
 
-button>img {
-    max-width: 120%;
+.markerContainer {
+    display: flex;
+    flex-direction: column;
+    
+}
+
+
+label>img {
+    width: 57px;
     height: auto;
 }
 
-button>img:hover {
+label>img:hover {
     transform: scale(1.03);
     cursor: pointer;
 }
@@ -192,23 +203,25 @@ footer>span {
 }
 
 .dot {
-    width: 10px;
+    width: 30px;
     height: 10px;
 
-    border-radius: 50%;
+    border-radius: 10px;
 
-    background-color: rgb(255, 0, 217);
+    background-color: rgb(255, 80, 80);
     border: 1px solid black;
 
     position: absolute;
-    top: 75px;
-    transition: 0.5s;
+    top: 93px;
+    transition: 0.7s;
 }
 
 .x {
-    left: 28.5px;
+    left: 12.5px;
+    background-color: rgba(255,97,95,255);
 }
 
 .o {
-    left: 107px;
+    left: 89px;
+    background-color: rgba(62,197,243,255);
 }

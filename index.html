@@ -23,27 +23,40 @@
     <main>
         <div class="playerCard">
             <img class="playerImg" src="./images/18970387_4100_03.jpg" alt="player 1 photo">
-            <div class="playerInfo">
+            <form class="playerInfo">
                 <input type="text" name="name" id="playerOne" value="Bob">
-                <div class="markers" id="one">
-                    <button class="markerBtn" value="x"><img src="./images/x.png"></button>
-                    <button class="markerBtn" value="o"><img src="./images/o.png"></button>
+                <div class="radioContainer" id="one">
+                    <div class="markerContainer">
+                        <label for="xOne"><img src="./images/x.png"></label>
+                        <input type="radio" name="marker" id="xOne">
+                    </div>
+                    <div class="markerContainer">
+                        <label for="oOne"><img src="./images/o.png"></label>
+                        <input type="radio" name="marker" id="oOne">
+                    </div>
+                    <div class="dot x" id="dotOne"></div>
                 </div>
-            </div>
+            </form>
         </div>
 
         <div class="boardContainer"></div>
 
         <div class="playerCard">
             <img class="playerImg" src="./images/3400_6_06.jpg" alt="player 2 photo">
-
-            <div class="playerInfo">
-                <input type="text" name="name" id="playerTwo" value="Jim">
-                <div class="markers" id="two">
-                    <button class="markerBtn" value="x"><img src="./images/x.png"></button>
-                    <button class="markerBtn" value="o"><img src="./images/o.png"></button>
+            <form class="playerInfo">
+                <input type="text" name="name" id="playerOne" value="Sal">
+                <div class="radioContainer" id="two">
+                    <div class="markerContainer">
+                        <label for="xTwo"><img src="./images/x.png"></label>
+                        <input type="radio" name="marker" id="xTwo">
+                    </div>
+                    <div class="markerContainer">
+                        <label for="oTwo"><img src="./images/o.png"></label>
+                        <input type="radio" name="marker" id="oTwo">
+                    </div>
+                    <div class="dot x o" id="dotTwo"></div>
                 </div>
-            </div>
+            </form>
         </div>
     </main>
 

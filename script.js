@@ -318,7 +318,7 @@ const display = (() => {
     let board = [];
     const boardContainer = document.querySelector('.boardContainer');
     const resetButton = document.querySelector('#resetBtn');
-    const markerButtons = document.querySelectorAll('.markerBtn');
+    const radioInputs = document.querySelectorAll('input[type="radio"]');
     let markerBtnsEnabled;
 
 
@@ -338,25 +338,32 @@ const display = (() => {
     };
     */
 
-    const dotOne = document.createElement('div');
-    dotOne.classList.add('dot');
+    const moveDots = () => {
+        const dotOne = document.querySelector('#dotOne');
+        const dotTwo = document.querySelector('#dotTwo');
 
-    const updatePlayerCard = (btn) => {
-        const player = btn.parentElement.id;
-        const btnContainer = btn.parentElement;
-        console.log(btn.value);
-
-        if (btnContainer.children.length < 3) {
-            btnContainer.appendChild(dotOne);
+        dotOne.classList.toggle('o');
+        dotTwo.classList.toggle('o');
+    };
+     
+            
+    const changeRadio = (input) => {
+        const id = input.id;
+        switch (id) {
+            case 'xOne':
+                document.querySelector('#oTwo').checked = true;
+                break;
+            case 'oOne':
+                document.querySelector('#xTwo').checked = true;
+                break;
+            case 'xTwo':
+                document.querySelector('#oOne').checked = true;
+                break;
+            default:
+                document.querySelector('#xOne').checked = true;
+                break;
         };
-        if (btn.value === 'x') {
-            dotOne.classList.toggle('x', true);  // Add 'x' class
-            dotOne.classList.toggle('o', false); // Remove 'o' class
-        } else {
-            dotOne.classList.toggle('o', true);  // Add 'o' class
-            dotOne.classList.toggle('x', false); // Remove 'x' class
-        }
-    }
+    };
 
     const applyListeners = () => {
         boardContainer.addEventListener('click', (e) => {
@@ -367,14 +374,13 @@ const display = (() => {
             resetGame();
         });
 
-        markerButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                updatePlayerCard(btn);
+        radioInputs.forEach(input => {
+            input.addEventListener('change', () => {
+                moveDots();
+                changeRadio(input);
             });
-            //console.log(btn.value)
-            //console.log(btn.parentElement.id)
         });
-    }
+    };
 
     const resetGame = () => {
         function clearBoard() {
