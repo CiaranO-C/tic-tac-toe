@@ -25,25 +25,37 @@ function createPlayer() {
     };
 
     const getMarker = () => marker;
-
-    const win = () => score++;
-
+    const addPoint = () => score++;
     const getScore = () => score;
-
+    const setTurn = (bool) => turn = bool;
+    const resetScore = () => score = 0;
     const isTurn = () => turn;
 
-    const setTurn = (bool) => turn = bool;
-
-    return { setName, getName, getMarker, setMarker, win, getScore, isTurn, setTurn };
+    return { setName, getName, setMarker, getMarker, addPoint, getScore, resetScore, setTurn, isTurn };
 };
+
+const players = (() => {
+    const one = createPlayer();
+    const two = createPlayer();
+
+    //All methods relating to both players
+    function currentPlayer() {
+        if (one.isTurn()) {
+            return one;
+        } else {
+            return two;
+        };
+    };
+
+    return { one, two, currentPlayer};
+})();
 
 const gameBoard = (() => {
     const board = [];
     const rows = 3;
     const cols = 3;
     let winner = false;
-
-    const hasWon = () => winner;
+    let draw = false;
 
     const generateBoard = (shouldClear = false) => {
         //either generates intial board, or clears existing board
@@ -61,6 +73,7 @@ const gameBoard = (() => {
                 };
             };
             winner = false;
+            draw = false;
         };
         return board;
     };
@@ -84,9 +97,9 @@ const gameBoard = (() => {
         } else {
             return true;
         };
-    }
+    };
 
-    const checkWinner = () => {
+    const checkWin = () => {
         function checkRows() {
             for (let i = 0; i < rows; i++) {
                 const marker = board[i][0];
@@ -151,21 +164,29 @@ const gameBoard = (() => {
         checkDiag();
     };
 
-    return { hasWon, getBoard, generateBoard, updateBoard, validateMove, checkWinner };
+    const isEnd = () => winner || draw;
+    const getWin = () => winner;
+    const setDraw = (bool) => draw = bool;
+
+    return { generateBoard, getBoard, updateBoard, validateMove, checkWin, isEnd, getWin, setDraw };
 })();
 
 
 const gameControl = () => {
-    const playerOne = createPlayer();
-    const playerTwo = createPlayer();
+    gameBoard.generateBoard();
+    display.generateBoard();
 
-    function setNames(player, name) {
-        player.setName(name);
-        console.log(`Hello, ${player.getName()}!`);
-    }
+    const playerOne = players.one;
+    const playerTwo = players.two;
 
-    setNames(playerOne, 'Beep');
-    setNames(playerTwo, 'Boop');
+    //play button function call goes here right before getNames
+    const names = display.getNames;
+
+    playerOne.setName(names().nameOne);
+    playerTwo.setName(names().nameTwo);
+
+    console.log(playerOne.getName());
+    console.log(players.two.getName());
 
     function setMarkers() {
         //if player one has no marker, must be first round
@@ -192,9 +213,9 @@ const gameControl = () => {
         };
     };
 
-    setMarkers();
+    //setMarkers();
 
-    gameBoard.generateBoard();
+
 
 
     function switchTurn() {
@@ -207,43 +228,40 @@ const gameControl = () => {
         };
     };
 
-    function currentPlayer() {
-        if (playerOne.isTurn()) {
-            return playerOne
-        } else {
-            return playerTwo
-        };
-    };
+    
 
     let row;
     let col;
     function getMove() {
-        row = prompt('Enter Row');
-        col = prompt('Enter Column');
+        // row = prompt('Enter Row');
+        // col = prompt('Enter Column');
     };
 
     console.log('Let the game begin!');
 
-    playGame();
+    // playGame();
 
     function playGame() {
 
         console.table(gameBoard.getBoard());
         let moveCount = 1;
 
-        while (!gameBoard.hasWon()) {
+        while (!gameBoard.isEnd()) {
 
             do {
                 getMove();
             } while (!gameBoard.validateMove(row, col));
 
-            gameBoard.updateBoard(row, col, currentPlayer().getMarker());
+            gameBoard.updateBoard(row, col, players.currentPlayer()().getMarker());
 
             console.table(gameBoard.getBoard());
 
             if (moveCount > 4) {
-                gameBoard.checkWinner();
-            }
+                gameBoard.checkWin();
+                if (moveCount === 9 && !gameBoard.isEnd()) {
+                    gameBoard.setDraw(true);
+                };
+            };
 
             moveCount++;
             switchTurn();
@@ -251,42 +269,97 @@ const gameControl = () => {
 
     };
 
-    function winsScores() {
-        //set turn back to winning player
-        switchTurn();
+    function gameResult() {
+        if (gameBoard.getWin()) {
+            //set turn back to winning player
+            switchTurn();
 
-
-        if (playerOne.isTurn()) {
-            console.log(`${playerOne.getName()} Wins!!!`);
-            playerOne.win();
+            if (playerOne.isTurn()) {
+                console.log(`${playerOne.getName()} Wins!!!`);
+                playerOne.addPoint();
+            } else {
+                console.log(`${playerTwo.getName()} Wins!!!`);
+                playerTwo.addPoint();
+            };
+            //game over and win is false, must be draw
         } else {
-            console.log(`${playerTwo.getName()} Wins!!!`);
-            playerTwo.win();
+            console.log(`It's a draw!`);
         };
+    };
 
+
+
+    function printScores() {
         console.log(`*---*  ${playerOne.getName()}'s score: ${playerOne.getScore()}  *---*`);
         console.log(`*---*  ${playerTwo.getName()}'s score: ${playerTwo.getScore()}  *---*`);
     };
 
-    winsScores();
+    // gameResult();
+    // printScores();
+    // playAgain();
+    function playAgain() {
+        let again = confirm('Play Again???');
+        while (again) {
+            setMarkers();
 
-    let again = confirm('Play Again???');
-    while (again) {
-        setMarkers();
+            gameBoard.generateBoard('clear');
 
-        gameBoard.generateBoard('clear');
+            console.log(`Let round ${playerOne.getScore() + playerTwo.getScore() + 1} begin!`);
 
-        console.log(`Let round ${playerOne.getScore() + playerTwo.getScore() + 1} begin!`)
+            playGame();
+            gameResult();
+            printScores();
 
-        playGame();
-        winsScores();
+            again = confirm('Play Again???');
+        };
 
-        again = confirm('Play Again???');
+        console.log('Thanks for playing!');
+    };
+};
+
+const display = (() => {
+
+    const boardContainer = document.querySelector('.boardContainer');
+    let board = [];
+
+    const updateBoard = (event) => {
+        const cell = event.target;
+        const marker = document.createElement('img');
+        if(players.)
     };
 
-    console.log('Thanks for playing!');
-};
+    const generateBoard = () => {
+        board = gameBoard.getBoard();
+
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                const cell = document.createElement('button');
+                cell.setAttribute('index', `${i}${j}`);
+                cell.classList.add('cell');
+                boardContainer.appendChild(cell);
+            };
+        };
+
+        boardContainer.addEventListener('click', (e) => {
+            updateBoard(e);
+        });
+    };
+
+
+    const getNames = () => {
+        const nameOne = document.querySelector('#playerOne').value;
+        const nameTwo = document.querySelector('#playerTwo').value;
+        return { nameOne, nameTwo };
+    };
+
+    // const getMarkers = () => {
+    //     const markerOne = document.querySelector(#)
+    //  }
+
+    return { generateBoard, getNames, };
+})();
 
 
 gameControl();
+
 

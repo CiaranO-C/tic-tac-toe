@@ -1,13 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tic Tac Toe</title>
     <link rel="stylesheet" href="./style.css">
     <script src="./script.js" defer></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Kode+Mono:wght@400..700&family=Noto+Serif+Display:ital,wght@0,100..900;1,100..900&family=Pixelify+Sans:wght@400..700&display=swap"
+        rel="stylesheet">
 </head>
+
 <body>
-    <h1>Tic Tac Toe!</h1>
+    <header>
+        <h1>Tic-Tac-Toe</h1>
+        <button id="resetBtn">Reset</button>
+    </header>
+
+    <main>
+        <div class="playerCard">
+            <img class="playerImg" src="./images/18970387_4100_03.jpg" alt="player 1 photo">
+            <div class="playerInfo">
+                <input type="text" name="name" id="playerOne" value="Bob">
+                <div class="markers" id="markersOne">
+                    <button class="markerBtn"><img src="./images/x.png" alt="O"></button>
+                    <button class="markerBtn"><img src="./images/o.png" alt="X"></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="boardContainer"></div>
+
+        <div class="playerCard">
+            <img class="playerImg" src="./images/3400_6_06.jpg" alt="player 2 photo">
+
+            <div class="playerInfo">
+                <input type="text" name="name" id="playerTwo" value="Jim">
+                <div class="markers" id="markersTwo">
+                    <button class="markerBtn"><img src="./images/x.png" alt="X"></button>
+                    <button class="markerBtn"><img src="./images/o.png" alt="O"></button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <button class="play">Play!</button>
+    </footer>
 </body>
+
 </html>
