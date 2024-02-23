@@ -130,6 +130,7 @@ const gameBoard = (() => {
                 if (!marker) continue;
                 if (board[i].every(elem => elem === marker)) {
                     winner = true;
+                    players.current().addPoint();
                     return;
                 };
             };
@@ -139,7 +140,7 @@ const gameBoard = (() => {
             for (let j = 0; j < cols; j++) {
                 const marker = board[0][j];
                 if (!marker) continue;
-        
+
                 let columnWin = true; // Assume win for each column
                 for (let i = 1; i < rows; i++) {
                     if (board[i][j] !== marker) {
@@ -149,12 +150,12 @@ const gameBoard = (() => {
                 }
                 if (columnWin) {
                     winner = true;
-                    
+                    players.current().addPoint();
                     return; // Exit function if win detected
                 };
             };
         };
-        
+
 
         function checkDiag() {
             const marker = board[1][1];
@@ -168,6 +169,8 @@ const gameBoard = (() => {
                     };
                 };
                 winner = true;
+                players.current().addPoint();
+                return;
             };
 
             function diagTwo() {
@@ -180,6 +183,8 @@ const gameBoard = (() => {
                     };
                 };
                 winner = true;
+                players.current().addPoint();
+                return;
             };
             diagOne();
             diagTwo();
@@ -191,6 +196,10 @@ const gameBoard = (() => {
 
         if (moveCount === 9 && !winner) {
             setDraw(true);
+        };
+
+        if (winner) {
+            display.points().add();
         };
     };
 
@@ -209,6 +218,10 @@ const display = (() => {
     const playButton = document.querySelector('.play');
     const nameInputs = document.querySelectorAll('input[type="text"]');
     const footer = document.querySelector('footer');
+    const yes = document.createElement('button');
+    yes.textContent = 'Yes';
+    const no = document.createElement('button');
+    no.textContent = 'No';
 
     const updateDialog = (reset = false) => {
         const message = document.createElement('span');
@@ -229,10 +242,6 @@ const display = (() => {
         };
 
         if (gameBoard.isEnd()) {
-            const yes = document.createElement('button');
-            yes.textContent = 'Yes';
-            const no = document.createElement('button');
-            no.textContent = 'No';
             disableBoard();
 
             setTimeout(() => {
@@ -242,6 +251,32 @@ const display = (() => {
             }, 2000);
         }
     };
+
+    const points = () => {
+        const add = () => {
+            let container;
+            const player = players.current();
+            if (player === players.one) {
+                container = document.querySelector('#cardOne').lastElementChild;
+            } else {
+                container = document.querySelector('#cardTwo').lastElementChild;
+            };
+            const point = document.createElement('div');
+            point.classList.add('point');
+            container.appendChild(point);
+        };
+
+        const clear = () => {
+            const containers = document.querySelectorAll('.pointContainer');
+            containers.forEach(cont => {
+                while(cont.firstChild){
+                    cont.removeChild(cont.firstChild);
+                };
+            })
+        };
+
+        return { add, clear };
+    }
 
     const disableBoard = () => {
         for (const cell of boardContainer.children) {
@@ -301,7 +336,7 @@ const display = (() => {
         if (!cell.firstChild) {
             cell.appendChild(marker);
             gameBoard.updateBoard(cell.getAttribute('index'));
-            gameBoard.totalMoves().add(); 
+            gameBoard.totalMoves().add();
             players.switchTurn();
             updateDialog();
         } else {
@@ -310,7 +345,6 @@ const display = (() => {
                 cell.id = '';
             }, 200);
         };
-        console.table(gameBoard.getBoard());
     };
 
     const getForms = () => {
@@ -360,6 +394,10 @@ const display = (() => {
             resetButton.addEventListener('click', () => {
                 resetGame();
             });
+
+            no.addEventListener('click', () => {
+                resetGame();
+            });
         };
 
         const radioListeners = () => {
@@ -379,12 +417,24 @@ const display = (() => {
         const duringGame = () => {
             cellListener();
             resetListener();
+            playAgain();
         }
 
-        return { cellListener, resetListener, radioListeners, preGame, duringGame }
+        const playAgain = () => {
+            yes.addEventListener('click', () => {
+                clearBoard();
+                generateBoard();
+                cellListener();
+                gameBoard.generateBoard('clear');
+                updateDialog();
+            })
+        }
+
+        return { cellListener, resetListener, radioListeners, preGame, duringGame, playAgain }
     };
 
     const resetGame = () => {
+        points().clear();
         clearBoard();
         generateBoard();
         enableForms();
@@ -410,7 +460,7 @@ const display = (() => {
         };
     };
 
-    return { generateBoard, resetGame, applyListeners, getForms, updateDialog };
+    return { generateBoard, resetGame, applyListeners, getForms, updateDialog, points};
 })();
 
 const gameControl = (() => {

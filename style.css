@@ -76,7 +76,7 @@ main {
 
 .playerCard {
     width: 260px;
-    height: 340px;
+    height: 350px;
     padding: 20px;
     border: 1.5px solid black;
 
@@ -87,6 +87,7 @@ main {
     grid-template-rows: 1fr 1fr;
     justify-items: center;
     align-items: center;
+    gap: 10px;
 }
 
 .playerImg {
@@ -112,7 +113,7 @@ main {
     flex-direction: column;
     background-color: whitesmoke;
     width: 260px;
-    height: 90%;
+    height: 149px;
     align-items: center;
     align-self: end;
     border-bottom-right-radius: 25px;
@@ -145,6 +146,21 @@ input[type="radio"] {
     display: flex;
     flex-direction: column;
 
+}
+
+.point {
+    height: 15px;
+    width: 15px;
+
+    border-radius: 50%;
+    background-color: var(--light-purple);
+    border: 1px solid black;
+}
+
+.pointContainer {
+    display: flex;
+    width: 100%;
+    gap: 5px;
 }
 
 
