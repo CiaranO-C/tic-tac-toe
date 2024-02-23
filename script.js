@@ -15,12 +15,11 @@ function createPlayer() {
     const getName = () => playerName;
 
     const setMarker = (choice) => {
-        const choiceCaps = choice.toUpperCase();
-        if (choiceCaps === 'X' || choiceCaps === 'O') {
-            marker = choiceCaps;
-            (marker === 'X') ? turn = true : turn = false;
+        marker = choice;
+        if (choice === 'x') {
+            turn = true;
         } else {
-            console.log('Whoops! Try again, enter either X or O!');
+            turn = false;
         };
     };
 
@@ -47,7 +46,17 @@ const players = (() => {
         };
     };
 
-    return { one, two, current };
+    function switchTurn() {
+        if (one.isTurn()) {
+            one.setTurn(false);
+            two.setTurn(true);
+        } else {
+            two.setTurn(false);
+            one.setTurn(true);
+        };
+    };
+
+    return { one, two, current, switchTurn };
 })();
 
 const gameBoard = (() => {
@@ -56,6 +65,14 @@ const gameBoard = (() => {
     const cols = 3;
     let winner = false;
     let draw = false;
+    let moveCount = 1;
+
+    const totalMoves = () => {
+        const add = () => moveCount++;
+        const count = () => moveCount;
+        const reset = () => moveCount = 1;
+        return { add, count, reset };
+    };
 
     const generateBoard = (shouldClear = false) => {
         //either generates intial board, or clears existing board
@@ -74,19 +91,26 @@ const gameBoard = (() => {
             };
             winner = false;
             draw = false;
+            moveCount = 1
         };
-        return board;
     };
 
     const getBoard = () => {
         return board;
     };
 
-    const updateBoard = (i, j, marker) => {
+    const updateBoard = (index) => {
+        const marker = players.current().getMarker();
+        i = index[0];
+        j = index[1];
+
         if (i > 2 || j > 2 || board[i][j]) {
             console.log('Please enter valid co-ords!')
         } else {
             board[i][j] = marker;
+        };
+        if (gameBoard.totalMoves().count() > 4) {
+            checkWin();
         };
     };
 
@@ -103,7 +127,7 @@ const gameBoard = (() => {
         function checkRows() {
             for (let i = 0; i < rows; i++) {
                 const marker = board[i][0];
-                if (!marker) return;
+                if (!marker) continue;
                 if (board[i].every(elem => elem === marker)) {
                     winner = true;
                     return;
@@ -114,17 +138,23 @@ const gameBoard = (() => {
         function checkCols() {
             for (let j = 0; j < cols; j++) {
                 const marker = board[0][j];
-                if (!marker) return;
-                for (let i = 0; i < rows; i++) {
+                if (!marker) continue;
+        
+                let columnWin = true; // Assume win for each column
+                for (let i = 1; i < rows; i++) {
                     if (board[i][j] !== marker) {
-                        return;
-                    } else if (i === 2) {
-                        winner = true;
-                        return;
-                    };
+                        columnWin = false;
+                        break;
+                    }
+                }
+                if (columnWin) {
+                    winner = true;
+                    
+                    return; // Exit function if win detected
                 };
             };
         };
+        
 
         function checkDiag() {
             const marker = board[1][1];
@@ -133,27 +163,23 @@ const gameBoard = (() => {
                 if (!marker) return;
                 for (let i = 0; i < 3; i++) {
                     const j = i;
-
                     if (board[i][j] !== marker) {
-                        return;
-                    } else if (i === 2) {
-                        winner = true;
                         return;
                     };
                 };
+                winner = true;
             };
 
             function diagTwo() {
+                if (!marker) return;
                 for (let i = 0; i < 3; i++) {
                     let j = 2 - i;
 
                     if (board[i][j] !== marker) {
                         return;
-                    } else if (i === 2) {
-                        winner = true;
-                        return;
                     };
                 };
+                winner = true;
             };
             diagOne();
             diagTwo();
@@ -162,191 +188,90 @@ const gameBoard = (() => {
         checkRows();
         checkCols();
         checkDiag();
+
+        if (moveCount === 9 && !winner) {
+            setDraw(true);
+        };
     };
 
     const isEnd = () => winner || draw;
     const getWin = () => winner;
     const setDraw = (bool) => draw = bool;
+    const getDraw = () => draw;
 
-    return { generateBoard, getBoard, updateBoard, validateMove, checkWin, isEnd, getWin, setDraw };
+    return { generateBoard, getBoard, updateBoard, validateMove, checkWin, isEnd, getWin, getDraw, totalMoves };
 })();
 
-
-const gameControl = () => {
-    gameBoard.generateBoard();
-    display.generateBoard();
-    display.applyListeners();
-
-    const playerOne = players.one;
-    const playerTwo = players.two;
-
-    //play button function call goes here right before getNames
-    const names = display.getNames;
-    playerOne.setName(names().nameOne);
-    playerTwo.setName(names().nameTwo);
-
-    function setMarkers() {
-        //if player one has no marker, must be first round
-        if (!playerOne.getMarker()) {
-            playerOne.setMarker('X');
-            console.log(`${playerOne.getName()} has chosen ${playerOne.getMarker()}!`);
-
-            if (playerOne.getMarker() === 'X') {
-                playerTwo.setMarker('O');
-            } else {
-                playerTwo.setMarker('X');
-            };
-            console.log(`${playerTwo.getName()}'s marker is ${playerTwo.getMarker()}!`);
-
-            //play again selected 
-        } else {
-            const shouldChange = confirm('Would you like to change markers?');
-            if (shouldChange) {
-                const token = playerOne.getMarker();
-                playerOne.setMarker(playerTwo.getMarker());
-                playerTwo.setMarker(token);
-                console.log(`You swapped markers! ${playerOne.getName()} is now ${playerOne.getMarker()}... and ${playerTwo.getName()} is ${playerTwo.getMarker()}!`);
-            };
-        };
-    };
-
-    //setMarkers();
-
-
-
-
-    function switchTurn() {
-        if (playerOne.isTurn()) {
-            playerOne.setTurn(false);
-            playerTwo.setTurn(true);
-        } else {
-            playerTwo.setTurn(false);
-            playerOne.setTurn(true);
-        };
-    };
-
-
-
-    let row;
-    let col;
-    function getMove() {
-        // row = prompt('Enter Row');
-        // col = prompt('Enter Column');
-    };
-
-    console.log('Let the game begin!');
-
-    // playGame();
-
-    function playGame() {
-
-        console.table(gameBoard.getBoard());
-        let moveCount = 1;
-
-        while (!gameBoard.isEnd()) {
-
-            do {
-                getMove();
-            } while (!gameBoard.validateMove(row, col));
-
-            gameBoard.updateBoard(row, col, players.current()().getMarker());
-
-            console.table(gameBoard.getBoard());
-
-            if (moveCount > 4) {
-                gameBoard.checkWin();
-                if (moveCount === 9 && !gameBoard.isEnd()) {
-                    gameBoard.setDraw(true);
-                };
-            };
-
-            moveCount++;
-            switchTurn();
-        };
-
-    };
-
-    function gameResult() {
-        if (gameBoard.getWin()) {
-            //set turn back to winning player
-            switchTurn();
-
-            if (playerOne.isTurn()) {
-                console.log(`${playerOne.getName()} Wins!!!`);
-                playerOne.addPoint();
-            } else {
-                console.log(`${playerTwo.getName()} Wins!!!`);
-                playerTwo.addPoint();
-            };
-            //game over and win is false, must be draw
-        } else {
-            console.log(`It's a draw!`);
-        };
-    };
-
-
-
-    function printScores() {
-        console.log(`*---*  ${playerOne.getName()}'s score: ${playerOne.getScore()}  *---*`);
-        console.log(`*---*  ${playerTwo.getName()}'s score: ${playerTwo.getScore()}  *---*`);
-    };
-
-    // gameResult();
-    // printScores();
-    // playAgain();
-    function playAgain() {
-        let again = confirm('Play Again???');
-        while (again) {
-            setMarkers();
-
-            gameBoard.generateBoard('clear');
-
-            console.log(`Let round ${playerOne.getScore() + playerTwo.getScore() + 1} begin!`);
-
-            playGame();
-            gameResult();
-            printScores();
-
-            again = confirm('Play Again???');
-        };
-
-        console.log('Thanks for playing!');
-    };
-};
-
 const display = (() => {
-    let board = [];
     const boardContainer = document.querySelector('.boardContainer');
     const resetButton = document.querySelector('#resetBtn');
     const radioInputs = document.querySelectorAll('input[type="radio"]');
-    let markerBtnsEnabled;
+    const playButton = document.querySelector('.play');
+    const nameInputs = document.querySelectorAll('input[type="text"]');
+    const footer = document.querySelector('footer');
 
+    const updateDialog = (reset = false) => {
+        const message = document.createElement('span');
+        removeMessage();
 
-    // const getMarkers = () => {
-    //when getMarkers is called it means the play has started, therefore this function should also remove event listners
-    //essentially disabling player ability to change marker. OR can write a separate method to remove listeners called
-    //disableButtons that can be called immediately after!
-    //};
+        if (!reset) {
+            if (gameBoard.getWin()) {
+                players.switchTurn() // switch turn back to winning player
+                message.textContent = `${players.current().getName()} Wins!`
+            } else if (gameBoard.getDraw()) {
+                message.textContent = 'Its a draw!'
+            } else {
+                message.textContent = `${players.current().getName()}'s turn!`
+            };
+            footer.appendChild(message);
+        } else {
+            footer.appendChild(playButton);
+        };
 
-    /*
-    const toggleMarkerButtons = () => {
-        if(markerBtnsEnabled){
-            markerButtons.forEach(btn => {
-                btn.removeEventListener('click', )
-            })
+        if (gameBoard.isEnd()) {
+            const yes = document.createElement('button');
+            yes.textContent = 'Yes';
+            const no = document.createElement('button');
+            no.textContent = 'No';
+            disableBoard();
+
+            setTimeout(() => {
+                removeMessage();
+                message.textContent = 'Play Again?';
+                footer.append(message, yes, no);
+            }, 2000);
         }
     };
-    */
 
-    const moveDots = () => {
+    const disableBoard = () => {
+        for (const cell of boardContainer.children) {
+            cell.replaceWith(cell.cloneNode(true));
+        };
+    };
+
+    const removeMessage = () => {
+        while (footer.firstChild) {
+            footer.removeChild(footer.firstChild);
+        };
+    }
+
+    const dots = () => {
         const dotOne = document.querySelector('#dotOne');
         const dotTwo = document.querySelector('#dotTwo');
 
-        dotOne.classList.toggle('o');
-        dotTwo.classList.toggle('o');
+        const move = () => {
+            dotOne.classList.toggle('o');
+            dotTwo.classList.toggle('o');
+        };
+
+        const reset = () => {
+            dotOne.classList.toggle('o', false);
+            dotTwo.classList.toggle('o', true);
+        };
+
+        return { move, reset };
     };
-     
-            
+
     const changeRadio = (input) => {
         const id = input.id;
         switch (id) {
@@ -365,42 +290,107 @@ const display = (() => {
         };
     };
 
-    const applyListeners = () => {
-        boardContainer.addEventListener('click', (e) => {
-            updateBoard(e);
-        });
-
-        resetButton.addEventListener('click', () => {
-            resetGame();
-        });
-
-        radioInputs.forEach(input => {
-            input.addEventListener('change', () => {
-                moveDots();
-                changeRadio(input);
-            });
-        });
-    };
-
-    const resetGame = () => {
-        function clearBoard() {
-            while (boardContainer.firstChild) {
-                boardContainer.firstChild.remove();
-            };
-        };
-        clearBoard();
-        generateBoard();
-    };
-
-    const updateBoard = (event) => {
-        const cell = event.target;
+    const updateCell = (cell) => {
         const marker = document.createElement('img');
-        if (players.current().getMarker() === 'X') {
+        if (players.current().getMarker() === 'x') {
             marker.src = "./images/x.png";
         } else {
             marker.src = "./images/o.png";
         };
-        cell.appendChild(marker);
+
+        if (!cell.firstChild) {
+            cell.appendChild(marker);
+            gameBoard.updateBoard(cell.getAttribute('index'));
+            gameBoard.totalMoves().add(); 
+            players.switchTurn();
+            updateDialog();
+        } else {
+            cell.id = 'invalidMove';
+            setTimeout(() => {
+                cell.id = '';
+            }, 200);
+        };
+        console.table(gameBoard.getBoard());
+    };
+
+    const getForms = () => {
+        const formOne = new FormData(playerOneForm);
+        const formTwo = new FormData(playerTwoForm);
+        const nameOne = formOne.get('name');
+        const nameTwo = formTwo.get('name');
+        const markerOne = formOne.get('marker');
+        const markerTwo = formTwo.get('marker');
+
+        disableForms();
+
+        return { nameOne, nameTwo, markerOne, markerTwo };
+    };
+
+    const disableForms = () => {
+        nameInputs.forEach(input => input.readOnly = true);
+        radioInputs.forEach(input => input.disabled = true);
+    };
+
+    const enableForms = () => {
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => form.reset());
+        nameInputs.forEach(input => input.readOnly = false);
+        radioInputs.forEach(input => input.disabled = false);
+    }
+
+    const applyListeners = () => {
+
+        const playListener = () => {
+            playButton.addEventListener('click', () => {
+                duringGame();
+                playButton.remove();
+                gameControl.startGame();
+            });
+        };
+
+        const cellListener = () => {
+            for (const cell of boardContainer.children) {
+                cell.addEventListener('click', () => {
+                    updateCell(cell);
+                });
+            };
+        };
+
+        const resetListener = () => {
+            resetButton.addEventListener('click', () => {
+                resetGame();
+            });
+        };
+
+        const radioListeners = () => {
+            radioInputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    dots().move();
+                    changeRadio(input);
+                });
+            });
+        };
+
+        const preGame = () => {
+            radioListeners();
+            playListener();
+        };
+
+        const duringGame = () => {
+            cellListener();
+            resetListener();
+        }
+
+        return { cellListener, resetListener, radioListeners, preGame, duringGame }
+    };
+
+    const resetGame = () => {
+        clearBoard();
+        generateBoard();
+        enableForms();
+        dots().reset();
+        gameBoard.generateBoard('clear');
+        updateDialog('reset');
     };
 
     const generateBoard = () => {
@@ -414,21 +404,54 @@ const display = (() => {
         };
     };
 
-
-    const getNames = () => {
-        const nameOne = document.querySelector('#playerOne').value;
-        const nameTwo = document.querySelector('#playerTwo').value;
-        return { nameOne, nameTwo };
+    const clearBoard = () => {
+        while (boardContainer.firstChild) {
+            boardContainer.firstChild.remove();
+        };
     };
 
-    // const getMarkers = () => {
-    //     const markerOne = document.querySelector(#)
-    //  }
-
-    return { generateBoard, getNames, resetGame, applyListeners };
+    return { generateBoard, resetGame, applyListeners, getForms, updateDialog };
 })();
 
+const gameControl = (() => {
 
-gameControl();
+    gameBoard.generateBoard();
+
+    display.generateBoard();
+
+    display.applyListeners().preGame();
 
 
+    const playerOne = players.one;
+    const playerTwo = players.two;
+
+
+    function startGame() {
+        const playerInfo = display.getForms();
+        playerOne.setName(playerInfo.nameOne);
+        playerTwo.setName(playerInfo.nameTwo);
+        playerOne.setMarker(playerInfo.markerOne);
+        playerTwo.setMarker(playerInfo.markerTwo);
+
+        display.updateDialog();
+    };
+
+    function playAgain() {
+        let again = confirm('Play Again???');
+        while (again) {
+            setMarkers();
+
+            gameBoard.generateBoard('clear');
+
+            console.log(`Let round ${playerOne.getScore() + playerTwo.getScore() + 1} begin!`);
+
+            playGame();
+            gameResult();
+            printScores();
+
+            again = confirm('Play Again???');
+        };
+    };
+
+    return { startGame, }
+})();

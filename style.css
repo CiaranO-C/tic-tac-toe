@@ -11,7 +11,7 @@ body::after {
 }
 
 body {
-height: 100vh;
+    height: 100vh;
     font-family: "Kode Mono", monospace;
     font-size: 10px;
 
@@ -39,10 +39,10 @@ h1 {
     text-shadow: 4px 2px 0px rgba(0, 0, 0, 1);
 }
 
-#resetBtn{
+#resetBtn {
     height: 70px;
     width: 160px;
-   
+
 }
 
 button {
@@ -78,7 +78,7 @@ main {
     width: 260px;
     height: 340px;
     padding: 20px;
-border: 1.5px solid black;
+    border: 1.5px solid black;
 
     background-color: var(--purple);
     border-radius: 25px;
@@ -125,11 +125,11 @@ border: 1.5px solid black;
 
 
 .radioContainer {
-   display: flex;
-   padding-top: 25px;
-   gap: 20px;
+    display: flex;
+    padding-top: 25px;
+    gap: 20px;
 
-   position: relative;
+    position: relative;
 }
 
 .markerContainer>label {
@@ -138,13 +138,13 @@ border: 1.5px solid black;
 }
 
 input[type="radio"] {
-  appearance: none;
+    appearance: none;
 }
 
 .markerContainer {
     display: flex;
     flex-direction: column;
-    
+
 }
 
 
@@ -218,10 +218,23 @@ footer>span {
 
 .x {
     left: 12.5px;
-    background-color: rgba(255,97,95,255);
+    background-color: rgba(255, 97, 95, 255);
 }
 
 .o {
     left: 89px;
-    background-color: rgba(62,197,243,255);
+    background-color: rgba(62, 197, 243, 255);
+}
+
+#invalidMove {
+    background-color: #fe80b0;
+    transition: 0.2s;
+}
+
+.invisibleBtn {
+    border: none;
+    background-color: rgb(162, 8, 8);
+    height: 0px;
+    width: 0px;
+    padding: 0px;
 }
