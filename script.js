@@ -67,13 +67,6 @@ const gameBoard = (() => {
     let draw = false;
     let moveCount = 1;
 
-    const totalMoves = () => {
-        const add = () => moveCount++;
-        const count = () => moveCount;
-        const reset = () => moveCount = 1;
-        return { add, count, reset };
-    };
-
     const generateBoard = (shouldClear = false) => {
         //either generates intial board, or clears existing board
         if (!shouldClear) {
@@ -95,10 +88,6 @@ const gameBoard = (() => {
         };
     };
 
-    const getBoard = () => {
-        return board;
-    };
-
     const updateBoard = (index) => {
         const marker = players.current().getMarker();
         i = index[0];
@@ -111,15 +100,6 @@ const gameBoard = (() => {
         };
         if (gameBoard.totalMoves().count() > 4) {
             checkWin();
-        };
-    };
-
-    const validateMove = (i, j) => {
-        if (i > 2 || j > 2) {
-            console.log('Please enter valid co-ords!')
-            return false;
-        } else {
-            return true;
         };
     };
 
@@ -195,7 +175,7 @@ const gameBoard = (() => {
         checkDiag();
 
         if (moveCount === 9 && !winner) {
-            setDraw(true);
+            draw = true;
         };
 
         if (winner) {
@@ -205,10 +185,16 @@ const gameBoard = (() => {
 
     const isEnd = () => winner || draw;
     const getWin = () => winner;
-    const setDraw = (bool) => draw = bool;
     const getDraw = () => draw;
 
-    return { generateBoard, getBoard, updateBoard, validateMove, checkWin, isEnd, getWin, getDraw, totalMoves };
+    const totalMoves = () => {
+        const add = () => moveCount++;
+        const count = () => moveCount;
+        const reset = () => moveCount = 1;
+        return { add, count, reset };
+    };
+
+    return {generateBoard, updateBoard, isEnd, getWin, getDraw, totalMoves };
 })();
 
 const display = (() => {
@@ -223,105 +209,26 @@ const display = (() => {
     const no = document.createElement('button');
     no.textContent = 'No';
 
-    const updateDialog = (reset = false) => {
-        const message = document.createElement('span');
-        removeMessage();
-
-        if (!reset) {
-            if (gameBoard.getWin()) {
-                players.switchTurn() // switch turn back to winning player
-                message.textContent = `${players.current().getName()} Wins!`
-            } else if (gameBoard.getDraw()) {
-                message.textContent = 'Its a draw!'
-            } else {
-                message.textContent = `${players.current().getName()}'s turn!`
+    const generateBoard = () => {
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                const cell = document.createElement('button');
+                cell.setAttribute('index', `${i}${j}`);
+                cell.classList.add('cell');
+                boardContainer.appendChild(cell);
             };
-            footer.appendChild(message);
-        } else {
-            footer.appendChild(playButton);
         };
-
-        if (gameBoard.isEnd()) {
-            disableBoard();
-
-            setTimeout(() => {
-                removeMessage();
-                message.textContent = 'Play Again?';
-                footer.append(message, yes, no);
-            }, 2000);
-        }
     };
 
-    const points = () => {
-        const add = () => {
-            let container;
-            const player = players.current();
-            if (player === players.one) {
-                container = document.querySelector('#cardOne').lastElementChild;
-            } else {
-                container = document.querySelector('#cardTwo').lastElementChild;
-            };
-            const point = document.createElement('div');
-            point.classList.add('point');
-            container.appendChild(point);
+    const clearBoard = () => {
+        while (boardContainer.firstChild) {
+            boardContainer.firstChild.remove();
         };
-
-        const clear = () => {
-            const containers = document.querySelectorAll('.pointContainer');
-            containers.forEach(cont => {
-                while(cont.firstChild){
-                    cont.removeChild(cont.firstChild);
-                };
-            })
-        };
-
-        return { add, clear };
-    }
-
+    };
+   
     const disableBoard = () => {
         for (const cell of boardContainer.children) {
             cell.replaceWith(cell.cloneNode(true));
-        };
-    };
-
-    const removeMessage = () => {
-        while (footer.firstChild) {
-            footer.removeChild(footer.firstChild);
-        };
-    }
-
-    const dots = () => {
-        const dotOne = document.querySelector('#dotOne');
-        const dotTwo = document.querySelector('#dotTwo');
-
-        const move = () => {
-            dotOne.classList.toggle('o');
-            dotTwo.classList.toggle('o');
-        };
-
-        const reset = () => {
-            dotOne.classList.toggle('o', false);
-            dotTwo.classList.toggle('o', true);
-        };
-
-        return { move, reset };
-    };
-
-    const changeRadio = (input) => {
-        const id = input.id;
-        switch (id) {
-            case 'xOne':
-                document.querySelector('#oTwo').checked = true;
-                break;
-            case 'oOne':
-                document.querySelector('#xTwo').checked = true;
-                break;
-            case 'xTwo':
-                document.querySelector('#oOne').checked = true;
-                break;
-            default:
-                document.querySelector('#xOne').checked = true;
-                break;
         };
     };
 
@@ -333,6 +240,7 @@ const display = (() => {
             marker.src = "./images/o.png";
         };
 
+        //checks if cell already contains a move, flashes red if invalid
         if (!cell.firstChild) {
             cell.appendChild(marker);
             gameBoard.updateBoard(cell.getAttribute('index'));
@@ -345,6 +253,16 @@ const display = (() => {
                 cell.id = '';
             }, 200);
         };
+    };
+
+    const resetGame = () => {
+        points().clear();
+        clearBoard();
+        generateBoard();
+        enableForms();
+        slider().reset();
+        gameBoard.generateBoard('clear');
+        updateDialog('reset');
     };
 
     const getForms = () => {
@@ -370,7 +288,42 @@ const display = (() => {
         forms.forEach(form => form.reset());
         nameInputs.forEach(input => input.readOnly = false);
         radioInputs.forEach(input => input.disabled = false);
-    }
+    };
+
+    const changeRadio = (input) => {
+        const id = input.id;
+        switch (id) {
+            case 'xOne':
+                document.querySelector('#oTwo').checked = true;
+                break;
+            case 'oOne':
+                document.querySelector('#xTwo').checked = true;
+                break;
+            case 'xTwo':
+                document.querySelector('#oOne').checked = true;
+                break;
+            default:
+                document.querySelector('#xOne').checked = true;
+                break;
+        };
+    };
+
+    const slider = () => {
+        const dotOne = document.querySelector('#dotOne');
+        const dotTwo = document.querySelector('#dotTwo');
+
+        const move = () => {
+            dotOne.classList.toggle('o');
+            dotTwo.classList.toggle('o');
+        };
+
+        const reset = () => {
+            dotOne.classList.toggle('o', false);
+            dotTwo.classList.toggle('o', true);
+        };
+
+        return { move, reset };
+    };
 
     const applyListeners = () => {
 
@@ -403,7 +356,7 @@ const display = (() => {
         const radioListeners = () => {
             radioInputs.forEach(input => {
                 input.addEventListener('change', () => {
-                    dots().move();
+                    slider().move();
                     changeRadio(input);
                 });
             });
@@ -433,34 +386,68 @@ const display = (() => {
         return { cellListener, resetListener, radioListeners, preGame, duringGame, playAgain }
     };
 
-    const resetGame = () => {
-        points().clear();
-        clearBoard();
-        generateBoard();
-        enableForms();
-        dots().reset();
-        gameBoard.generateBoard('clear');
-        updateDialog('reset');
-    };
+    const updateDialog = (reset = false) => {
+        const message = document.createElement('span');
+        removeMessage();
 
-    const generateBoard = () => {
-        for (let i = 0; i < 3; i++) {
-            for (let j = 0; j < 3; j++) {
-                const cell = document.createElement('button');
-                cell.setAttribute('index', `${i}${j}`);
-                cell.classList.add('cell');
-                boardContainer.appendChild(cell);
+        if (!reset) {
+            if (gameBoard.getWin()) {
+                players.switchTurn(); // switch turn back to winning player
+                message.textContent = `${players.current().getName()} Wins!`;
+            } else if (gameBoard.getDraw()) {
+                message.textContent = 'Its a draw!';
+            } else {
+                message.textContent = `${players.current().getName()}'s turn!`;
             };
+            footer.appendChild(message);
+        } else {
+            footer.appendChild(playButton);
+        };
+
+        if (gameBoard.isEnd()) {
+            disableBoard();
+
+            setTimeout(() => {
+                removeMessage();
+                message.textContent = 'Play Again?';
+                footer.append(message, yes, no);
+            }, 2000);
         };
     };
 
-    const clearBoard = () => {
-        while (boardContainer.firstChild) {
-            boardContainer.firstChild.remove();
+    const removeMessage = () => {
+        while (footer.firstChild) {
+            footer.removeChild(footer.firstChild);
         };
     };
 
-    return { generateBoard, resetGame, applyListeners, getForms, updateDialog, points};
+    const points = () => {
+        const add = () => {
+            let container;
+            const player = players.current();
+            if (player === players.one) {
+                container = document.querySelector('#cardOne').lastElementChild;
+            } else {
+                container = document.querySelector('#cardTwo').lastElementChild;
+            };
+            const point = document.createElement('div');
+            point.classList.add('point');
+            container.appendChild(point);
+        };
+
+        const clear = () => {
+            const containers = document.querySelectorAll('.pointContainer');
+            containers.forEach(cont => {
+                while(cont.firstChild){
+                    cont.removeChild(cont.firstChild);
+                };
+            });
+        };
+
+        return { add, clear };
+    };
+
+    return { generateBoard, applyListeners, getForms, updateDialog, points};
 })();
 
 const gameControl = (() => {
@@ -484,23 +471,6 @@ const gameControl = (() => {
         playerTwo.setMarker(playerInfo.markerTwo);
 
         display.updateDialog();
-    };
-
-    function playAgain() {
-        let again = confirm('Play Again???');
-        while (again) {
-            setMarkers();
-
-            gameBoard.generateBoard('clear');
-
-            console.log(`Let round ${playerOne.getScore() + playerTwo.getScore() + 1} begin!`);
-
-            playGame();
-            gameResult();
-            printScores();
-
-            again = confirm('Play Again???');
-        };
     };
 
     return { startGame, }
